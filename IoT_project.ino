@@ -1,37 +1,42 @@
 #include <WiFi.h>
- const char* ssid = "CAMPUS CONNECT CUT";
- const char* password = "075289";
+#include <AdafruitIO_Wifi.h>
+
+const char* ssid = "CAMPUS CONNECT CUT";
+const char* password = "075289";
+
+#define IO_USERNAME  "z3n1thviRgo"
+#define IO_KEY       "aio_LLwC851dbM4WeORHogPPGWWkmJCz"
+
+#define ad8232_out 34
+#define ad8232_lop 32
+#define ad8232_lom 33
+
+AdafruitIO_Wifi io(IO_USERNAME, IO_KEY, ssid, password);
+AdafruitIO_Feed *ecgFeed = io.feed("ecg");
+//other sensors will add later
+unsigned long lastpublishtime = 0;
+const unsigned long interval = 10000;
 void setup() {
     Serial.begin(115200);
     delay(1000);
+  //write pinmodes for all sensors later here
+  Serial.println("Connecting to IO...");
+  io.connect();
 
-  Serial.println("System Initializing");
-  Wifi.begin(ssid, password);
-
-  pinMode(32, INPUT); //LO-plus
-  pinMode(33, INPUT); //LO-minus
-  pinMode(34, INPUT); //ecg voltage
-  while (Wifi.status() != WL_CONNECTED) {
-    delay(500);
+  while (io.status() < AIO_CONNECTED) {
     Serial.print(".");
+    delay(500);
   }
+
+  Serial.println(io.statusText());
 }
-  Serial.print("Connected successfully");
-
-  int ecgread() {
-    if (digitalRead(32) == 1 || digitalRead(33) == 1) {
-      Serial.println("Leads not connected properly");
-      return 0;
-    }
-    else {
-      int value = analogRead(34);
-      return value;
-    }  
-  }
+  
 void loop() {
-  int signal = ecgread();
-  Serial.print("Signal is: ");
-  Serial.println(signal);
+  io.run(); 
 
-  delay(20);
+  if (millis() - lastpublishtime >= interval) {
+    lastpublishtime = millis();
+  }
+
+  //will configure for all sensors later on
 }
