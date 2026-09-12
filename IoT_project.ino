@@ -1,42 +1,37 @@
-#include <Wire.h>
-#include <MAX30105.h>
-#include <spo2_algorithm.h>
-
-MAX30105 particleSensor;
-
-uint32_t irbuffer[100];
-uint32_t redbuffer[100];
-
-int32_t spo2;
-int8_t validspo2;
-int32_t heartrate;
-int8_t validheartrate;
-
+#include <WiFi.h>
+ const char* ssid = "CAMPUS CONNECT CUT";
+ const char* password = "075289";
 void setup() {
-  Serial.begin(115200);
-  Wire.begin(21, 22);
+    Serial.begin(115200);
+    delay(1000);
 
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  {
-    Sertial.println("Sensor not found");
-    while (1 == 1);
+  Serial.println("System Initializing");
+  Wifi.begin(ssid, password);
+
+  pinMode(32, INPUT); //LO-plus
+  pinMode(33, INPUT); //LO-minus
+  pinMode(34, INPUT); //ecg voltage
+  while (Wifi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
   }
-  particleSensor.setup();
-  Serial.println("Initialized");
 }
+  Serial.print("Connected successfully");
 
-void loop () {
-  for (byte i = 0; i < 100; i++) {
-    while (!particleSensor.available())
-      particleSensor.check();
-    redbuffer[i] = particleSensor.getRed();
-    irbuffer[i] = particleSensor.getIR();
-    particleSensor.nextSample();
+  int ecgread() {
+    if (digitalRead(32) == 1 || digitalRead(33) == 1) {
+      Serial.println("Leads not connected properly");
+      return 0;
     }
-
-  maxim_spo2_accuracy(irbuffer, 100, redbuffer, &spo2, &validspo2, &heartrate, &validheartrate);
-
-  if (validheartrate == 1 && validspo2 == 1) {
-    Serial.print("Spo2: ");
-    Serial.print(spo2);
+    else {
+      int value = analogRead(34);
+      return value;
+    }  
   }
+void loop() {
+  int signal = ecgread();
+  Serial.print("Signal is: ");
+  Serial.println(signal);
+
+  delay(20);
 }
