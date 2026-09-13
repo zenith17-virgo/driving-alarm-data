@@ -31,6 +31,16 @@ int ecgread() {
   }
 }
 
+   Wire.begin(21, 22);
+
+  if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  {
+    Sertial.println("Sensor not found");
+    while (1 == 1);
+  }
+  particleSensor.setup();
+  Serial.println("Initialized");
+}
+
 void setup() {
   Serial.begin(115200);
 
