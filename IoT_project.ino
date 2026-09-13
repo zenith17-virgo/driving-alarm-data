@@ -4,11 +4,11 @@
 #include "MAX30105.h"
 #include "spo2_algorithm.h"
 
-#define WIFI_SSID       "CAMPUS CONNECT CUT"
-#define WIFI_PASS       "075289"
+#define WIFI_SSID       "" //will add later
+#define WIFI_PASS       "" //will add later
 
-#define IO_USERNAME     "YOUR_ADAFRUIT_USERNAME"
-#define IO_KEY          "YOUR_ADAFRUIT_AIO_KEY"
+#define IO_USERNAME     "" //will add later
+#define IO_KEY          "" //will add later
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 MAX30105 particleSensor;
@@ -34,11 +34,11 @@ int ecgread() {
 void setup() {
   Serial.begin(115200);
 
-  pinMode(32, INPUT);
-  pinMode(33, INPUT);
+  pinMode(32, INPUT); //loplus
+  pinMode(33, INPUT); //lominus
   pinMode(34, INPUT);
 
-  Wire.begin(21, 22);
+  Wire.begin(21, 22); //for max30102
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
     while (1);
   }
@@ -46,7 +46,7 @@ void setup() {
 
   io.connect();
   while (io.status() < AIO_CONNECTED) {
-    delay(500);
+    delay(500); //connects to adafruitio
   }
 }
 
@@ -73,9 +73,9 @@ void loop() {
     snprintf(jsonPayload, sizeof(jsonPayload),
       "{\"ecg\":%d,\"spo2\":%d,\"hr\":%d}",
       ecgVal, finalSpo2, finalHr
-    );
+    ); //JSON payload
 
     Serial.println(jsonPayload);
-    healthFeed->save(jsonPayload);
+    healthFeed->save(jsonPayload); //displays in adafruit dashboard
   }
 }
