@@ -1,14 +1,14 @@
 #include <WiFi.h>
 #include <Wire.h>
-#include <AdafruitIO_WiFi.h>
-#include <MAX30105.h>
-#include <spo2_algorithm.h>
+#include "AdafruitIO_WiFi.h"
+#include "MAX30105.h"
+#include "spo2_algorithm.h"
 
-#define WIFI_SSID       "" //will add later
-#define WIFI_PASS       "" //will add later
+#define WIFI_SSID       "CAMPUS CONNECT CUT"
+#define WIFI_PASS       "075289"
 
-#define IO_USERNAME     "z3n1thviRgo"
-#define IO_KEY          "aio_LLwC851dbM4WeORHogPPGWWkmJCz"
+#define IO_USERNAME     "YOUR_ADAFRUIT_USERNAME"
+#define IO_KEY          "YOUR_ADAFRUIT_AIO_KEY"
 
 AdafruitIO_WiFi io(IO_USERNAME, IO_KEY, WIFI_SSID, WIFI_PASS);
 MAX30105 particleSensor;
@@ -27,50 +27,55 @@ int ecgread() {
   if (digitalRead(32) == 1 || digitalRead(33) == 1) {
     return 0;
   } else {
-    return analogRead(34); //ecg reading
+    return analogRead(34);
   }
-}
-
-   Wire.begin(21, 22);
-
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST))  {
-    Sertial.println("Sensor not found");
-    while (1 == 1);
-  }
-  particleSensor.setup();
-  Serial.println("Initialized");
 }
 
 void setup() {
   Serial.begin(115200);
 
-  pinMode(32, INPUT); //loplus
-  pinMode(33, INPUT); //lominus
-  pinMode(34, INPUT); 
+  pinMode(32, INPUT);
+  pinMode(33, INPUT);
+  pinMode(34, INPUT);
 
-  
+  Wire.begin(21, 22);
+  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
+    while (1);
+  }
+  particleSensor.setup();
+
   io.connect();
   while (io.status() < AIO_CONNECTED) {
-    delay(500); //connects to adafruit io
+    delay(500);
   }
 }
 
 void loop() {
-  io.run(); //holds mqtt
+  io.run();
 
+  for (byte i = 0; i < 100; i++) {
+    while (!particleSensor.available()) particleSensor.check();
+    redBuffer[i] = particleSensor.getRed();
+    irBuffer[i] = particleSensor.getIR();
+    particleSensor.nextSample();
+  }
+
+  maxim_spo2_accuracy(irBuffer, 100, redBuffer, &spo2, &validSPO2, &heartRate, &validHeartRate);
 
   if (millis() - lastPublishTime >= 10000) {
     lastPublishTime = millis();
 
     int ecgVal = ecgread();
-   
+    int finalSpo2 = (validSPO2 == 1) ? spo2 : 0;
+    int finalHr   = (validHeartRate == 1) ? heartRate : 0;
+
     char jsonPayload[128];
     snprintf(jsonPayload, sizeof(jsonPayload),
-      "{\"ecg\":%d}",
-      ecgVal
-    ); //creates json payload
+      "{\"ecg\":%d,\"spo2\":%d,\"hr\":%d}",
+      ecgVal, finalSpo2, finalHr
+    );
 
     Serial.println(jsonPayload);
-    healthFeed->save(jsonPayload); //shows the data in adafruit io dashboard
+    healthFeed->save(jsonPayload);
   }
 }
