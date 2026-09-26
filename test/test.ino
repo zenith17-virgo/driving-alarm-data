@@ -4,11 +4,11 @@
 #include <HX711.h>
 
 
-#define WIFI_SSID       "Hritam's M35" //will add later
-#define WIFI_PASS       "6s3qpe5uuf34b72" //will add later
+#define WIFI_SSID       "" //will add later
+#define WIFI_PASS       "" //will add later
 
-#define IO_USERNAME     "z3n1thviRgo" //will add later
-#define IO_KEY          "aio_VDKI52NdcdXCG84Q4z1FkjoZIdMp" //will add later
+#define IO_USERNAME     "" //will add later
+#define IO_KEY          "" //will add later
 
 #define HX711_DOUT_PIN 16 //input pin to read digital bits from sensor
 #define HX711_SCK_PIN 17 //output pin for esp32 to send clock signal
@@ -108,7 +108,7 @@ void loop() {
 
     int ecgVal = ecgread(); //value published after 10 seconds
     measurebp(sysval, diaval);
-    
+
     char jsonPayload[128];
     snprintf(jsonPayload, sizeof(jsonPayload),
       "{\"ecg\":%d, \"sys\":%d, \"dia\":%d}",
