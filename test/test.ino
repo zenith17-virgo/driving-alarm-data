@@ -34,9 +34,9 @@ int ecgread() {
   }
 }
 
-float readPressuremmhg() {
+float readPressuremmhg() { //converts raw electrical signals to units of mmhg
   if (pressureSensor.is_ready()) {
-    long raw = pressureSensor.get_units(1);
+    long raw = pressureSensor.get_units(1); //reads a single sample from sensor
     float mmhg = raw /420.0;
     return (mmhg < 0) ? 0 : mmhg;
   }
@@ -47,7 +47,7 @@ void measurebp(int &sys, int &dia) {
   digitalWrite(VALVE_PIN, HIGH);
   digitalWrite(PUMP_PIN, HIGH);
 
-  while (readPressuremmhg() < 160.0) {
+  while (readPressuremmhg() < 160.0) { //reads pressure up until it reaches 160 mmhg
     delay(50);
   }
 }
@@ -71,8 +71,8 @@ void measurebp(int &sys, int &dia) {
     previousreading = currentpressure;
     delay(50);
 
-    sys = (int)(mapPressure * 1.25);
-    dia = (int)(mapPressure * 0.72);
+    sys = (int)(mapPressure * 1.25); //calculate systolic pressure
+    dia = (int)(mapPressure * 0.72); //calculate diastolic pressure
 
     digitalWrite(VALVE_PIN, LOW);
   }
